@@ -21,23 +21,44 @@ try{
     await client.connect();
     const database = client.db('online_shop');
     const productsCollection = database.collection('products');
+    const orderCollection = database.collection('orders');
+
 
     // GET Products API
-    app.get('/products', async(req,res)=>{
+    app.get('/products', async(req,res) => {
+        console.log(req.query);
         const cursor = productsCollection.find({});
-        const products = await cursor.toArray();
+        const page = req.query.page;
+        const size = parseInt(req.query.size);
+        
+        let products;
         const count = await cursor.count();
+
+        if(page){
+            products = await cursor.skip(page*size).limit(size).toArray();
+        }
+        else{
+            products = await cursor.toArray();
+        }
+        
         res.send({
             count,
             products
         });
-    })
+    });
+    // Use POST to get data by keys
+    app.post('/products/byKeys', async(req, res)=>{
+        const keys = req.body;
+        const query = {key: {$in: keys}}
+        const products = await productsCollection.find(query).toArray();
+        res.json(products);
+    });
+
 }
 finally{
     // await client.close();
 }
 }
-
 run().catch(console.dir);
 
 app.get('/', (req, res) =>{

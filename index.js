@@ -54,6 +54,14 @@ try{
         res.json(products);
     });
 
+    // Add Orders API
+    app.post('/orders', async(req, res) =>{
+        const order = req.body;
+        const result = await orderCollection.insertOne(order);
+
+        res.json(result);
+    })
+
 }
 finally{
     // await client.close();
